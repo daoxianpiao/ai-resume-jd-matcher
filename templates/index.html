@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Resume JD Matcher</title>
+    <style>
+      :root {
+        --bg: #f6f7f8;
+        --panel: #ffffff;
+        --text: #172026;
+        --muted: #66727c;
+        --border: #d9e0e5;
+        --accent: #087f8c;
+        --accent-strong: #075e68;
+        --warn: #b45309;
+        --danger: #b42318;
+        --ok: #047857;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "Microsoft YaHei", sans-serif;
+        line-height: 1.5;
+      }
+
+      main {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 28px 20px 48px;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 760;
+      }
+
+      .subtle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      label {
+        display: block;
+        margin: 0 0 8px;
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 190px;
+        resize: vertical;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        color: var(--text);
+        background: #fbfcfd;
+        font: inherit;
+      }
+
+      textarea:focus {
+        border-color: var(--accent);
+        outline: 3px solid rgba(8, 127, 140, 0.14);
+      }
+
+      input[type="file"] {
+        width: 100%;
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        padding: 10px;
+        background: #fbfcfd;
+        color: var(--muted);
+        font: inherit;
+      }
+
+      .field {
+        margin-bottom: 14px;
+      }
+
+      .upload-row {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .file-status {
+        min-height: 20px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      button {
+        min-height: 40px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0 14px;
+        background: #ffffff;
+        color: var(--text);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      button.primary:hover {
+        background: var(--accent-strong);
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+      }
+
+      .result-empty {
+        color: var(--muted);
+      }
+
+      .score-row {
+        display: grid;
+        grid-template-columns: 112px 1fr;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .score {
+        display: grid;
+        place-items: center;
+        width: 98px;
+        height: 98px;
+        border: 8px solid rgba(8, 127, 140, 0.2);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--accent-strong);
+      }
+
+      h2,
+      h3 {
+        margin: 0 0 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      .section {
+        border-top: 1px solid var(--border);
+        padding-top: 14px;
+        margin-top: 14px;
+      }
+
+      ul,
+      ol {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 7px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .item {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        background: #fbfcfd;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: #f3f6f7;
+        font-size: 13px;
+      }
+
+      .mode-badge {
+        display: inline-block;
+        margin-bottom: 10px;
+        border: 1px solid #f0c36d;
+        border-radius: 999px;
+        padding: 5px 9px;
+        background: #fff8e6;
+        color: #8a5a00;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .history-section {
+        border-top: 1px solid var(--border);
+        margin-top: 18px;
+        padding-top: 16px;
+      }
+
+      .history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .history-header h3 {
+        margin: 0;
+      }
+
+      .history-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .history-card {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fbfcfd;
+        padding: 10px;
+      }
+
+      .history-button {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        display: grid;
+        gap: 4px;
+        justify-items: start;
+        padding: 10px;
+        text-align: left;
+        font-weight: 500;
+      }
+
+      .history-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .history-actions button {
+        min-height: 34px;
+        padding: 0 10px;
+      }
+
+      button.danger {
+        border-color: rgba(180, 35, 24, 0.3);
+        color: var(--danger);
+      }
+
+      .history-meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .history-score {
+        color: var(--accent-strong);
+        font-weight: 800;
+      }
+
+      .history-keywords {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .history-keyword {
+        border-radius: 999px;
+        background: #edf4f5;
+        padding: 3px 7px;
+        color: var(--accent-strong);
+        font-size: 12px;
+      }
+
+      .task-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .task-item {
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+        background: #fbfcfd;
+      }
+
+      .task-item input {
+        margin-top: 4px;
+      }
+
+      .task-item.completed {
+        color: var(--muted);
+      }
+
+      .task-item.completed .task-title {
+        text-decoration: line-through;
+      }
+
+      .severity-high {
+        color: var(--danger);
+        font-weight: 700;
+      }
+
+      .severity-medium {
+        color: var(--warn);
+        font-weight: 700;
+      }
+
+      .severity-low {
+        color: var(--ok);
+        font-weight: 700;
+      }
+
+      .error {
+        border-color: rgba(180, 35, 24, 0.25);
+        background: #fff7f6;
+        color: var(--danger);
+      }
+
+      @media (max-width: 860px) {
+        header,
+        .layout {
+          display: block;
+        }
+
+        header {
+          margin-bottom: 16px;
+        }
+
+        .panel + .panel {
+          margin-top: 16px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>AI 简历 JD 匹配助手</h1>
+          <p class="subtle">FastAPI + OpenAI Responses API + 结构化输出</p>
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="panel">
+          <form id="matcher-form">
+            <div class="field">
+              <label for="resume">简历内容</label>
+              <div class="upload-row">
+                <input
+                  id="resume_file"
+                  type="file"
+                  accept=".txt,.md,.pdf,.docx"
+                  data-target="resume"
+                  data-status="resume-status"
+                />
+                <p class="file-status" id="resume-status"></p>
+              </div>
+              <textarea id="resume" name="resume" required></textarea>
+            </div>
+            <div class="field">
+              <label for="job_description">岗位 JD</label>
+              <div class="upload-row">
+                <input
+                  id="job_description_file"
+                  type="file"
+                  accept=".txt,.md,.pdf,.docx"
+                  data-target="job_description"
+                  data-status="jd-status"
+                />
+                <p class="file-status" id="jd-status"></p>
+              </div>
+              <textarea id="job_description" name="job_description" required></textarea>
+            </div>
+            <div class="actions">
+              <button class="primary" type="submit" id="submit-button">开始分析</button>
+              <button type="button" id="sample-button">填入示例</button>
+              <button type="button" id="export-button" disabled>导出报告</button>
+              <button type="reset">清空</button>
+            </div>
+          </form>
+            <div class="history-section">
+              <div class="history-header">
+                <h3>最近分析</h3>
+              <div class="history-actions">
+                <button type="button" id="refresh-history-button">刷新</button>
+                <button class="danger" type="button" id="clear-history-button">清空</button>
+              </div>
+            </div>
+            <div class="history-list" id="history-list">
+              <p class="result-empty">暂无历史记录。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="result">
+          <p class="result-empty">分析结果会显示在这里。</p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const form = document.querySelector("#matcher-form");
+      const result = document.querySelector("#result");
+      const submitButton = document.querySelector("#submit-button");
+      const sampleButton = document.querySelector("#sample-button");
+      const exportButton = document.querySelector("#export-button");
+      const fileInputs = document.querySelectorAll('input[type="file"][data-target]');
+      const historyList = document.querySelector("#history-list");
+      const refreshHistoryButton = document.querySelector("#refresh-history-button");
+      const clearHistoryButton = document.querySelector("#clear-history-button");
+      let currentAnalysis = null;
+
+      const sampleResume = `人工智能专业本科生，会 Python，了解机器学习、深度学习基础课程。
+做过课程项目：图像分类小实验，使用 PyTorch 训练 CNN；做过一个简单 Flask 接口。
+熟悉 NumPy、Pandas、Scikit-learn，了解 Transformer、Prompt Engineering。
+目前正在学习 FastAPI、RAG、OpenAI API，希望求职 AI 应用开发方向。`;
+
+      const sampleJd = `AI 应用开发工程师岗位职责：
+1. 基于大模型 API 开发业务应用，完成需求分析、接口开发、测试和部署。
+2. 负责 RAG 知识库问答、Prompt 优化、结构化输出和工具调用能力建设。
+3. 使用 Python/FastAPI 开发 RESTful API，能做基础前端页面和系统联调。
+4. 了解 Agent、Dify、Coze、LangChain 或 LangGraph 优先。
+任职要求：本科及以上，计算机、人工智能相关专业；熟悉 Python；有 AI 应用项目或开源项目优先。`;
+
+      sampleButton.addEventListener("click", () => {
+        document.querySelector("#resume").value = sampleResume;
+        document.querySelector("#job_description").value = sampleJd;
+      });
+
+      fileInputs.forEach((input) => {
+        input.addEventListener("change", async () => {
+          if (!input.files.length) {
+            return;
+          }
+
+          const status = document.querySelector(`#${input.dataset.status}`);
+          const target = document.querySelector(`#${input.dataset.target}`);
+          const file = input.files[0];
+          const formData = new FormData();
+          formData.append("file", file);
+          status.textContent = `正在读取：${file.name}`;
+
+          try {
+            const response = await fetch("/api/extract-file", {
+              method: "POST",
+              body: formData,
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+              throw new Error(payload.detail || "文件读取失败");
+            }
+
+            target.value = payload.text;
+            status.textContent = `${payload.filename}，${payload.characters} 字`;
+          } catch (error) {
+            input.value = "";
+            status.textContent = error.message;
+          }
+        });
+      });
+
+      form.addEventListener("reset", () => {
+        setTimeout(() => {
+          document.querySelectorAll(".file-status").forEach((item) => {
+            item.textContent = "";
+          });
+          currentAnalysis = null;
+          exportButton.disabled = true;
+          result.innerHTML = `<p class="result-empty">分析结果会显示在这里。</p>`;
+        });
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submitButton.disabled = true;
+        result.innerHTML = `<p class="result-empty">正在分析...</p>`;
+
+        try {
+          const response = await fetch("/api/analyze", {
+            method: "POST",
+            body: new FormData(form),
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.detail || "请求失败");
+          }
+
+          renderResult(payload);
+          await loadHistory();
+        } catch (error) {
+          result.innerHTML = `<div class="panel error"><strong>分析失败</strong><p>${escapeHtml(error.message)}</p></div>`;
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+
+      refreshHistoryButton.addEventListener("click", loadHistory);
+      clearHistoryButton.addEventListener("click", clearHistory);
+      exportButton.addEventListener("click", exportMarkdownReport);
+
+      loadHistory();
+
+      async function loadHistory() {
+        try {
+          const response = await fetch("/api/history");
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.detail || "历史记录读取失败");
+          }
+
+          renderHistory(payload.items);
+        } catch (error) {
+          historyList.innerHTML = `<p class="result-empty">${escapeHtml(error.message)}</p>`;
+        }
+      }
+
+      function renderHistory(items) {
+        if (!items.length) {
+          historyList.innerHTML = `<p class="result-empty">暂无历史记录。</p>`;
+          return;
+        }
+
+        historyList.innerHTML = items
+          .map(
+            (item) => `
+              <div class="history-card">
+                <button class="history-button" type="button" data-history-id="${item.id}">
+                  <span><span class="history-score">${item.overall_score}</span> · ${escapeHtml(item.target_role)}</span>
+                  <span class="history-meta">${formatTime(item.created_at)} · ${item.analysis_mode}</span>
+                  <span class="history-meta">任务 ${item.task_completed}/${item.task_total}</span>
+                  <span class="history-meta">${escapeHtml(item.job_preview)}</span>
+                  ${renderHistoryKeywords(item.missing_keywords)}
+                </button>
+                <div class="history-actions">
+                  <button type="button" data-history-id="${item.id}">查看</button>
+                  <button class="danger" type="button" data-delete-history-id="${item.id}">删除</button>
+                </div>
+              </div>
+            `,
+          )
+          .join("");
+
+        historyList.querySelectorAll("[data-history-id]").forEach((button) => {
+          button.addEventListener("click", () => loadHistoryItem(button.dataset.historyId));
+        });
+
+        historyList.querySelectorAll("[data-delete-history-id]").forEach((button) => {
+          button.addEventListener("click", () => deleteHistoryItem(button.dataset.deleteHistoryId));
+        });
+      }
+
+      async function loadHistoryItem(id) {
+        result.innerHTML = `<p class="result-empty">正在读取历史记录...</p>`;
+
+        try {
+          const response = await fetch(`/api/history/${id}`);
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.detail || "历史记录读取失败");
+          }
+
+          document.querySelector("#resume").value = payload.resume;
+          document.querySelector("#job_description").value = payload.job_description;
+          renderResult(payload.result);
+        } catch (error) {
+          result.innerHTML = `<div class="panel error"><strong>读取失败</strong><p>${escapeHtml(error.message)}</p></div>`;
+        }
+      }
+
+      async function deleteHistoryItem(id) {
+        if (!window.confirm("删除这条历史记录？")) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/history/${id}`, {
+            method: "DELETE",
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.detail || "删除失败");
+          }
+
+          await loadHistory();
+        } catch (error) {
+          result.innerHTML = `<div class="panel error"><strong>删除失败</strong><p>${escapeHtml(error.message)}</p></div>`;
+        }
+      }
+
+      async function clearHistory() {
+        if (!window.confirm("清空所有历史记录？")) {
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/history", {
+            method: "DELETE",
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.detail || "清空失败");
+          }
+
+          await loadHistory();
+        } catch (error) {
+          result.innerHTML = `<div class="panel error"><strong>清空失败</strong><p>${escapeHtml(error.message)}</p></div>`;
+        }
+      }
+
+      function formatTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+        return date.toLocaleString("zh-CN", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function renderResult(data) {
+        currentAnalysis = data;
+        exportButton.disabled = false;
+        const modeBadge =
+          data.analysis_mode === "demo"
+            ? `<div class="mode-badge">演示模式：未调用 OpenAI API</div>`
+            : "";
+
+        result.innerHTML = `
+          ${modeBadge}
+          <div class="score-row">
+            <div class="score">${data.overall_score}</div>
+            <div>
+              <h2>${escapeHtml(data.target_role)}</h2>
+              <p>${escapeHtml(data.summary)}</p>
+            </div>
+          </div>
+          ${renderListSection("优势", data.strengths)}
+          ${renderListSection("风险", data.risks)}
+          ${renderScoreBreakdown(data.score_breakdown)}
+          ${renderTags("缺失关键词", data.missing_keywords)}
+          ${renderGaps(data.gaps)}
+          ${renderListSection("30 天学习计划", data.learning_plan_30_days, true)}
+          ${renderLearningTasks(data.learning_tasks || [])}
+          ${renderProjects(data.project_suggestions)}
+          ${renderRewriteTips(data.resume_rewrite_suggestions)}
+          ${renderListSection("面试表达要点", data.interview_talking_points)}
+        `;
+        wireLearningTaskEvents();
+      }
+
+      function renderListSection(title, items, ordered = false) {
+        const tag = ordered ? "ol" : "ul";
+        return `
+          <div class="section">
+            <h3>${title}</h3>
+            <${tag}>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</${tag}>
+          </div>
+        `;
+      }
+
+      function renderScoreBreakdown(items) {
+        return `
+          <div class="section">
+            <h3>能力拆分</h3>
+            <div class="grid">
+              ${items
+                .map(
+                  (item) => `
+                    <div class="item">
+                      <strong>${escapeHtml(item.name)}：${item.score}</strong>
+                      <p>${escapeHtml(item.reason)}</p>
+                    </div>
+                  `,
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderTags(title, items) {
+        return `
+          <div class="section">
+            <h3>${title}</h3>
+            <div class="tag-list">${items.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join("")}</div>
+          </div>
+        `;
+      }
+
+      function renderHistoryKeywords(items = []) {
+        if (!items.length) {
+          return "";
+        }
+        return `
+          <span class="history-keywords">
+            ${items.map((item) => `<span class="history-keyword">${escapeHtml(item)}</span>`).join("")}
+          </span>
+        `;
+      }
+
+      function renderLearningTasks(items) {
+        if (!items.length) {
+          return `
+            <div class="section">
+              <h3>学习任务看板</h3>
+              <p class="result-empty">暂无学习任务。</p>
+            </div>
+          `;
+        }
+
+        const completed = items.filter((item) => item.is_completed).length;
+        return `
+          <div class="section">
+            <h3>学习任务看板 ${completed}/${items.length}</h3>
+            <div class="task-list">
+              ${items
+                .map(
+                  (item) => `
+                    <label class="task-item ${item.is_completed ? "completed" : ""}">
+                      <input
+                        type="checkbox"
+                        data-learning-task-id="${item.id}"
+                        ${item.is_completed ? "checked" : ""}
+                      />
+                      <span class="task-title">${escapeHtml(item.title)}</span>
+                    </label>
+                  `,
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function wireLearningTaskEvents() {
+        result.querySelectorAll("[data-learning-task-id]").forEach((checkbox) => {
+          checkbox.addEventListener("change", () => {
+            updateLearningTask(checkbox.dataset.learningTaskId, checkbox.checked);
+          });
+        });
+      }
+
+      async function updateLearningTask(id, isCompleted) {
+        try {
+          const response = await fetch(`/api/learning-tasks/${id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ is_completed: isCompleted }),
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.detail || "任务更新失败");
+          }
+
+          currentAnalysis.learning_tasks = currentAnalysis.learning_tasks.map((item) =>
+            item.id === payload.id ? payload : item,
+          );
+          renderResult(currentAnalysis);
+          await loadHistory();
+        } catch (error) {
+          result.insertAdjacentHTML(
+            "afterbegin",
+            `<div class="panel error"><strong>任务更新失败</strong><p>${escapeHtml(error.message)}</p></div>`,
+          );
+        }
+      }
+
+      function renderGaps(items) {
+        return `
+          <div class="section">
+            <h3>能力缺口</h3>
+            <div class="grid">
+              ${items
+                .map(
+                  (item) => `
+                    <div class="item">
+                      <strong>${escapeHtml(item.skill)}</strong>
+                      <p class="severity-${item.severity}">${item.severity}</p>
+                      <p>${escapeHtml(item.evidence)}</p>
+                      <p>${escapeHtml(item.action)}</p>
+                    </div>
+                  `,
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderProjects(items) {
+        return `
+          <div class="section">
+            <h3>项目建议</h3>
+            <div class="grid">
+              ${items
+                .map(
+                  (item) => `
+                    <div class="item">
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <p>${escapeHtml(item.why)}</p>
+                      <ul>${item.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("")}</ul>
+                    </div>
+                  `,
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderRewriteTips(items) {
+        return `
+          <div class="section">
+            <h3>简历修改建议</h3>
+            <div class="grid">
+              ${items
+                .map(
+                  (item) => `
+                    <div class="item">
+                      <strong>${escapeHtml(item.before_issue)}</strong>
+                      <p>${escapeHtml(item.rewrite_tip)}</p>
+                    </div>
+                  `,
+                )
+                .join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      function exportMarkdownReport() {
+        if (!currentAnalysis) {
+          return;
+        }
+
+        const markdown = buildMarkdownReport(currentAnalysis);
+        const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
+        link.href = url;
+        link.download = `ai-resume-jd-report-${date}.md`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function buildMarkdownReport(data) {
+        return [
+          `# AI 简历 JD 匹配报告`,
+          ``,
+          `- 目标方向：${data.target_role}`,
+          `- 匹配分数：${data.overall_score}/100`,
+          `- 分析模式：${data.analysis_mode || "unknown"}`,
+          data.analysis_id ? `- 记录编号：${data.analysis_id}` : "",
+          ``,
+          `## 总结`,
+          data.summary,
+          ``,
+          markdownList("优势", data.strengths),
+          markdownList("风险", data.risks),
+          markdownScores(data.score_breakdown),
+          markdownList("缺失关键词", data.missing_keywords),
+          markdownGaps(data.gaps),
+          markdownList("30 天学习计划", data.learning_plan_30_days, true),
+          markdownTasks(data.learning_tasks || []),
+          markdownProjects(data.project_suggestions),
+          markdownRewriteTips(data.resume_rewrite_suggestions),
+          markdownList("面试表达要点", data.interview_talking_points),
+        ]
+          .filter(Boolean)
+          .join("\n");
+      }
+
+      function markdownList(title, items, ordered = false) {
+        if (!items?.length) {
+          return "";
+        }
+        const lines = items.map((item, index) => {
+          const prefix = ordered ? `${index + 1}.` : "-";
+          return `${prefix} ${item}`;
+        });
+        return [`## ${title}`, ...lines, ``].join("\n");
+      }
+
+      function markdownScores(items) {
+        if (!items?.length) {
+          return "";
+        }
+        return [
+          `## 能力拆分`,
+          ...items.map((item) => `- ${item.name}：${item.score}/100。${item.reason}`),
+          ``,
+        ].join("\n");
+      }
+
+      function markdownGaps(items) {
+        if (!items?.length) {
+          return "";
+        }
+        return [
+          `## 能力缺口`,
+          ...items.map(
+            (item) =>
+              `- ${item.skill}（${item.severity}）：${item.evidence} 建议：${item.action}`,
+          ),
+          ``,
+        ].join("\n");
+      }
+
+      function markdownTasks(items) {
+        if (!items?.length) {
+          return "";
+        }
+        return [
+          `## 学习任务看板`,
+          ...items.map((item) => `- [${item.is_completed ? "x" : " "}] ${item.title}`),
+          ``,
+        ].join("\n");
+      }
+
+      function markdownProjects(items) {
+        if (!items?.length) {
+          return "";
+        }
+        const lines = items.flatMap((item) => [
+          `### ${item.title}`,
+          ``,
+          item.why,
+          ``,
+          ...item.features.map((feature) => `- ${feature}`),
+          ``,
+        ]);
+        return [`## 项目建议`, ...lines].join("\n");
+      }
+
+      function markdownRewriteTips(items) {
+        if (!items?.length) {
+          return "";
+        }
+        const lines = items.flatMap((item) => [
+          `- 问题：${item.before_issue}`,
+          `  改法：${item.rewrite_tip}`,
+        ]);
+        return [`## 简历修改建议`, ...lines, ``].join("\n");
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    </script>
+  </body>
+</html>
