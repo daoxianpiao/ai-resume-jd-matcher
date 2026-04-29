@@ -6,6 +6,10 @@
 
 项目支持无 API Key 的本地演示模式，也支持配置 OpenAI API Key 后调用真实模型。
 
+## 界面预览
+
+![AI 简历 JD 匹配助手界面](docs/screenshot.png)
+
 ## 项目价值
 
 这个项目不是单纯的聊天机器人，而是一个完整的小型 AI Web 应用：
