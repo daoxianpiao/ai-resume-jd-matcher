@@ -1,0 +1,4 @@
+人工智能专业本科生，会 Python，了解机器学习、深度学习基础课程。
+做过课程项目：图像分类小实验，使用 PyTorch 训练 CNN；做过一个简单 Flask 接口。
+熟悉 NumPy、Pandas、Scikit-learn，了解 Transformer、Prompt Engineering。
+目前正在学习 FastAPI、RAG、OpenAI API，希望求职 AI 应用开发方向。

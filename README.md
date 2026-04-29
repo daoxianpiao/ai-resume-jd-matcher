@@ -65,6 +65,13 @@
 
 ## 快速开始
 
+仓库提供了两份示例输入：
+
+- `samples/resume.txt`
+- `samples/job_description.txt`
+
+可以在页面中点击“选择文件”上传这两个文件，快速体验完整分析流程。
+
 ### 本地运行
 
 ```powershell

@@ -1,0 +1,8 @@
+AI 应用开发工程师岗位职责：
+1. 基于大模型 API 开发业务应用，完成需求分析、接口开发、测试和部署。
+2. 负责 RAG 知识库问答、Prompt 优化、结构化输出和工具调用能力建设。
+3. 使用 Python/FastAPI 开发 RESTful API，能做基础前端页面和系统联调。
+4. 了解 Agent、Dify、Coze、LangChain 或 LangGraph 优先。
+
+任职要求：
+本科及以上，计算机、人工智能相关专业；熟悉 Python；有 AI 应用项目或开源项目优先。
