@@ -8,16 +8,14 @@ from io import BytesIO
 from pathlib import Path
 from typing import Literal, Optional
 
-from dotenv import load_dotenv
 from docx import Document
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi import Response
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, Field
 from pypdf import PdfReader
-
 
 load_dotenv()
 

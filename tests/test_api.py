@@ -4,13 +4,11 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import main
-
+import main  # noqa: E402
 
 RESUME = (
     "人工智能专业本科生，会 Python，了解机器学习，正在学习 FastAPI、Docker、"
