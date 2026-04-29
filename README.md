@@ -21,6 +21,8 @@
 - 用 Docker Compose 实现可复现运行
 - 用 pytest + GitHub Actions 覆盖核心接口测试
 
+配套学习笔记见：[LEARNING.md](LEARNING.md)
+
 ## 功能
 
 - 简历与岗位 JD 匹配分析
